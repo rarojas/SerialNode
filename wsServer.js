@@ -20,7 +20,12 @@ var servi = require('servi');
 var app = new servi(false);            // servi instance
 app.port(8080);                        // port number to run the server on
 // configure the server's behavior:
-app.serveFiles("public");              // serve all static HTML files from /public
+//app.serveFiles("public");  
+app.serveFiles("bower_components");             // serve all static HTML files from /public
+app.route('/', index);
+function index(request) {
+  request.serveFile('public/index.html');
+}
 //app.route('/data', sendData);          // route requests for /data to sendData() function
 // now that everything is configured, start the server:
 app.start();
@@ -73,8 +78,6 @@ function showPortOpen() {
 
 // this is called when new data comes into the serial port:
 function sendSerialData(data) {
-  // if there are webSocket connections, send the serial data
-  // to all of them:
   console.log(Number(data));
   if (connections.length > 0) {
     broadcast(data);
@@ -94,14 +97,21 @@ function sendToSerial(data) {
   myPort.write(data);
 }
 
+wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    client.send(data);
+  });
+};
 // ------------------------ webSocket Server event functions
 wss.on('connection', handleConnection);
-
 function handleConnection(client) {
   console.log("New Connection");        // you have a new client
   connections.push(client);             // add this client to the connections array
+  client.send('something');
 
   client.on('message', sendToSerial);      // when a client sends a message,
+  
+  wss.broadcast("clients : " + connections.length);
 
   client.on('close', function() {           // when a client closes its connection
     console.log("connection closed");       // print it out
@@ -109,6 +119,8 @@ function handleConnection(client) {
     connections.splice(position, 1);        // and delete it from the array
   });
 }
+
+
 // This function broadcasts messages to all webSocket clients
 function broadcast(data) {
   for (c in connections) {     // iterate over the array of connections
