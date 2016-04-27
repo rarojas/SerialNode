@@ -18,10 +18,10 @@ var WebSocketServer = require('ws').Server;   // include the webSocket library
 
 var servi = require('servi');  
 var app = new servi(false);            // servi instance
-app.port(8080);                        // port number to run the server on
+app.port(8082);                        // port number to run the server on
 // configure the server's behavior:
 //app.serveFiles("public");  
-app.serveFiles("bower_components");             // serve all static HTML files from /public
+app.serveFiles('.');             // serve all static HTML files from /public
 app.route('/', index);
 function index(request) {
   request.serveFile('public/index.html');
@@ -107,12 +107,7 @@ wss.on('connection', handleConnection);
 function handleConnection(client) {
   console.log("New Connection");        // you have a new client
   connections.push(client);             // add this client to the connections array
-  client.send('something');
-
   client.on('message', sendToSerial);      // when a client sends a message,
-  
-  wss.broadcast("clients : " + connections.length);
-
   client.on('close', function() {           // when a client closes its connection
     console.log("connection closed");       // print it out
     var position = connections.indexOf(client); // get the client's position in the array
@@ -127,3 +122,9 @@ function broadcast(data) {
     connections[c].send(JSON.stringify(data)); // send the data to each connection
   }
 }
+
+
+setInterval(function() {
+  broadcast({x : (Math.random() * 5)});
+}, 1000);
+

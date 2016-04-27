@@ -3,9 +3,10 @@
   "version": "0.0.4",
   "author": "Tom Igoe",
   "dependencies": {
+    "n3-charts": "^2.0.25",
     "serialport": "*",
-    "ws": "*",
-    "servi" : "*"
+    "servi": "*",
+    "ws": "*"
   },
   "engines": {
     "node": "0.10.x",
